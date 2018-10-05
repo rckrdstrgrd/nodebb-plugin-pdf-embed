@@ -51,7 +51,7 @@ plugin.registerFormatting = function(payload, callback) {
 plugin.processUpload = function(payload, callback) {
     console.log(payload);
     if (payload.type.startsWith('application/pdf')) {
-        var id = path.basename(payload.path),
+        var id = path.basename(payload.path).toLocaleLowerCase(),
             uploadPath = path.join(nconf.get('upload_path'), 'pdf-embed', id);
         console.log(id);
         async.waterfall([
