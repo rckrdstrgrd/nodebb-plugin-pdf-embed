@@ -29,7 +29,6 @@ plugin.init = function(params, callback) {
     
     var uploadPath = path.join(nconf.get('upload_path'), 'pdf-embed');
 
-    console.log(nconf.get('relative_path'));
     mkdirp(uploadPath, callback);
 };
 
@@ -49,11 +48,9 @@ plugin.registerFormatting = function(payload, callback) {
 };
 
 plugin.processUpload = function(payload, callback) {
-    console.log(payload);
     if (payload.type.startsWith('application/pdf')) {
         var id = path.basename(payload.path).toLocaleLowerCase(),
             uploadPath = path.join(nconf.get('upload_path'), 'pdf-embed', id);
-        console.log(id);
         async.waterfall([
             async.apply(mv, payload.path, uploadPath),
             async.apply(db.setObject, 'pdf-embed:id:' + id, {
@@ -63,7 +60,6 @@ plugin.processUpload = function(payload, callback) {
             async.apply(db.sortedSetAdd, 'pdf-embed:date', +new Date(), id)
         ], function(err) {
             if (err) {
-                console.log(err);
                 return callback(err);
             }
             callback(null, {
@@ -97,15 +93,12 @@ plugin.parseRaw = function(content, callback) {
     }
 
     // Filter out duplicates
-    console.log(matches)
     matches = matches.filter(function(match, idx) {
         return idx === matches.indexOf(match);
     }).map(function(match) {
         return match.slice(5, -1);
     });
-    console.log(matches);
     async.filter(matches, plugin.exists, function(err, ids) {
-        console.log(ids);
         async.reduce(ids, content, function(content, id, next) {
             app.render('partials/pdf-embed', {
                 id: id,
